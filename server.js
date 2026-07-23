@@ -16,7 +16,7 @@ app.get('/health', (req, res) => {
 
 const LEMON_CHECKOUT_URL = "https://seyirmatik.lemonsqueezy.com/checkout/buy/da52ec67-20eb-4ce8-be80-877881051a70";
 
-// Real Payment Checkout Page
+// Real Payment Checkout Page (Auto-redirects to Lemon Squeezy)
 app.get('/pay', (req, res) => {
   const { socketId } = req.query;
   const redirectUrl = `${LEMON_CHECKOUT_URL}?checkout[custom][socketId]=${socketId || ''}`;
@@ -27,25 +27,26 @@ app.get('/pay', (req, res) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Seyirmatik Premium $2 Ödeme</title>
+      <title>Güvenli Ödeme Sayfasına Yönlendiriliyorsunuz...</title>
       <style>
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f0f12; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .card { background: #18181c; border: 1px solid rgba(255, 117, 140, 0.4); border-radius: 20px; padding: 32px; max-width: 380px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .fire { font-size: 3rem; margin-bottom: 12px; }
-        h2 { margin: 0 0 8px 0; color: #fff; }
-        p { color: #a1a1aa; font-size: 0.9rem; line-height: 1.5; }
-        .price { font-size: 1.8rem; font-weight: 800; color: #ff758c; margin: 16px 0; }
-        .btn { background: linear-gradient(135deg, #ff4f87 0%, #ff758c 100%); color: #fff; border: none; padding: 14px 28px; font-size: 1rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: transform 0.2s; width: 100%; text-decoration: none; display: inline-block; box-sizing: border-box; }
-        .btn:hover { transform: scale(1.03); }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f0f12; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+        .card { background: #18181c; border: 1px solid rgba(255, 117, 140, 0.3); border-radius: 20px; padding: 40px; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .spinner { width: 44px; height: 44px; border: 4px solid rgba(255,117,140,0.15); border-top-color: #ff758c; border-radius: 50%; animation: spin 0.9s infinite linear; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        h2 { font-size: 1.15rem; color: #fff; margin: 0 0 8px 0; font-weight: 700; }
+        p { color: #a1a1aa; font-size: 0.85rem; line-height: 1.4; margin: 0; }
       </style>
+      <script>
+        setTimeout(function() {
+          window.location.href = "${redirectUrl}";
+        }, 600);
+      </script>
     </head>
     <body>
       <div class="card">
-        <div class="fire">🔥</div>
-        <h2>Seyirmatik Premium $2</h2>
-        <p>Lemon Squeezy ile güvenli ödeme yapın, hareketli Alev Çemberi ve tüm özel avatar çerçevelerini anında aktif edin.</p>
-        <div class="price">$2.00 USD</div>
-        <a href="${redirectUrl}" class="btn">💳 Lemon Squeezy ile Öde ($2)</a>
+        <div class="spinner"></div>
+        <h2>Güvenli Ödeme Sayfasına Yönlendiriliyorsunuz...</h2>
+        <p>Lütfen bekleyin, Lemon Squeezy ödeme ekranına aktarılıyorsunuz.</p>
       </div>
     </body>
     </html>
