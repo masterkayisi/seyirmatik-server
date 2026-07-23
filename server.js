@@ -14,9 +14,13 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', app: 'Seyirmatik Server' });
 });
 
+const LEMON_CHECKOUT_URL = "https://seyirmatik.lemonsqueezy.com/checkout/buy/da52ec67-20eb-4ce8-be80-877881051a70";
+
 // Real Payment Checkout Page
 app.get('/pay', (req, res) => {
   const { socketId } = req.query;
+  const redirectUrl = `${LEMON_CHECKOUT_URL}?checkout[custom][socketId]=${socketId || ''}`;
+  
   res.send(`
     <!DOCTYPE html>
     <html lang="tr">
@@ -31,7 +35,7 @@ app.get('/pay', (req, res) => {
         h2 { margin: 0 0 8px 0; color: #fff; }
         p { color: #a1a1aa; font-size: 0.9rem; line-height: 1.5; }
         .price { font-size: 1.8rem; font-weight: 800; color: #ff758c; margin: 16px 0; }
-        .btn { background: linear-gradient(135deg, #ff4f87 0%, #ff758c 100%); color: #fff; border: none; padding: 14px 28px; font-size: 1rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: transform 0.2s; width: 100%; }
+        .btn { background: linear-gradient(135deg, #ff4f87 0%, #ff758c 100%); color: #fff; border: none; padding: 14px 28px; font-size: 1rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: transform 0.2s; width: 100%; text-decoration: none; display: inline-block; box-sizing: border-box; }
         .btn:hover { transform: scale(1.03); }
       </style>
     </head>
@@ -39,22 +43,19 @@ app.get('/pay', (req, res) => {
       <div class="card">
         <div class="fire">🔥</div>
         <h2>Seyirmatik Premium $2</h2>
-        <p>Geliştiriciye $2 destek verin, hareketli Alev Çemberi ve tüm özel avatar çerçevelerini aktif edin.</p>
+        <p>Lemon Squeezy ile güvenli ödeme yapın, hareketli Alev Çemberi ve tüm özel avatar çerçevelerini anında aktif edin.</p>
         <div class="price">$2.00 USD</div>
-        <form action="/confirm-payment" method="POST">
-          <input type="hidden" name="socketId" value="${socketId || ''}" />
-          <button type="submit" class="btn">💳 $2 Güvenli Ödemeyi Tamamla</button>
-        </form>
+        <a href="${redirectUrl}" class="btn">💳 Lemon Squeezy ile Öde ($2)</a>
       </div>
     </body>
     </html>
   `);
 });
 
-// Real Payment Confirmation Webhook/Callback
-app.post('/confirm-payment', (req, res) => {
-  const { socketId } = req.body;
-  console.log(`Payment received & confirmed for socketId: ${socketId}`);
+// Lemon Squeezy Webhook / Confirmation Endpoint
+app.all('/confirm-payment', (req, res) => {
+  const socketId = req.query.socketId || (req.body && req.body.socketId) || (req.body && req.body.meta && req.body.meta.custom_data && req.body.meta.custom_data.socketId);
+  console.log(`Lemon Squeezy Payment confirmed for socketId: ${socketId}`);
   
   if (socketId && io.sockets.sockets.get(socketId)) {
     io.to(socketId).emit('premium-activated', {
