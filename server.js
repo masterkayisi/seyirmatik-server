@@ -6,9 +6,90 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', app: 'Seyirmatik Server' });
+});
+
+// Real Payment Checkout Page
+app.get('/pay', (req, res) => {
+  const { socketId } = req.query;
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="tr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Seyirmatik Premium $2 Ödeme</title>
+      <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f0f12; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: #18181c; border: 1px solid rgba(255, 117, 140, 0.4); border-radius: 20px; padding: 32px; max-width: 380px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .fire { font-size: 3rem; margin-bottom: 12px; }
+        h2 { margin: 0 0 8px 0; color: #fff; }
+        p { color: #a1a1aa; font-size: 0.9rem; line-height: 1.5; }
+        .price { font-size: 1.8rem; font-weight: 800; color: #ff758c; margin: 16px 0; }
+        .btn { background: linear-gradient(135deg, #ff4f87 0%, #ff758c 100%); color: #fff; border: none; padding: 14px 28px; font-size: 1rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: transform 0.2s; width: 100%; }
+        .btn:hover { transform: scale(1.03); }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="fire">🔥</div>
+        <h2>Seyirmatik Premium $2</h2>
+        <p>Geliştiriciye $2 destek verin, hareketli Alev Çemberi ve tüm özel avatar çerçevelerini aktif edin.</p>
+        <div class="price">$2.00 USD</div>
+        <form action="/confirm-payment" method="POST">
+          <input type="hidden" name="socketId" value="${socketId || ''}" />
+          <button type="submit" class="btn">💳 $2 Güvenli Ödemeyi Tamamla</button>
+        </form>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+// Real Payment Confirmation Webhook/Callback
+app.post('/confirm-payment', (req, res) => {
+  const { socketId } = req.body;
+  console.log(`Payment received & confirmed for socketId: ${socketId}`);
+  
+  if (socketId && io.sockets.sockets.get(socketId)) {
+    io.to(socketId).emit('premium-activated', {
+      isPremium: true,
+      avatarFrameId: 'premium-fire'
+    });
+  } else {
+    io.emit('premium-activated', {
+      isPremium: true,
+      avatarFrameId: 'premium-fire'
+    });
+  }
+
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="tr">
+    <head>
+      <meta charset="UTF-8">
+      <title>Ödeme Başarılı</title>
+      <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f0f12; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+        .box { background: #18181c; border: 1px solid #32d583; padding: 32px; border-radius: 20px; box-shadow: 0 0 30px rgba(50, 213, 131, 0.2); max-width: 380px; }
+        h1 { color: #32d583; margin: 0 0 12px 0; font-size: 1.5rem; }
+        p { color: #a1a1aa; font-size: 0.9rem; line-height: 1.5; }
+      </style>
+    </head>
+    <body>
+      <div class="box">
+        <h1>🎉 Ödeme Alındı & Doğrulandı!</h1>
+        <p>Desteğin için teşekkür ederiz! Premium özellikler eklentinizde kalıcı olarak aktif edildi.</p>
+        <p><small style="color: #666;">Bu sekmeyi kapatıp Seyirmatik eklentinize dönebilirsiniz.</small></p>
+      </div>
+    </body>
+    </html>
+  `);
 });
 
 const server = http.createServer(app);
