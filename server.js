@@ -18,16 +18,26 @@ const LEMON_CHECKOUT_URL = "https://seyirmatik.lemonsqueezy.com/checkout/buy/da5
 
 // Real Payment Checkout Page (Auto-redirects to Lemon Squeezy)
 app.get('/pay', (req, res) => {
-  const { socketId } = req.query;
+  const { socketId, lang } = req.query;
   const redirectUrl = `${LEMON_CHECKOUT_URL}?checkout[custom][socketId]=${socketId || ''}`;
   
+  const translations = {
+    tr: { title: "Güvenli Ödeme Sayfasına Yönlendiriliyorsunuz...", desc: "Lütfen bekleyin, Lemon Squeezy ödeme ekranına aktarılıyorsunuz." },
+    en: { title: "Redirecting to Secure Payment Page...", desc: "Please wait, redirecting you to Lemon Squeezy checkout." },
+    de: { title: "Weiterleitung zur sicheren Zahlungsseite...", desc: "Bitte warten Sie, Sie werden zur Lemon Squeezy Kasse weitergeleitet." },
+    es: { title: "Redirigiendo a la página de pago seguro...", desc: "Por favor espere, redirigiéndote a la pantalla de pago de Lemon Squeezy." },
+    fr: { title: "Redirection vers la page de paiement sécurisé...", desc: "Veuillez patienter, redirection vers le paiement Lemon Squeezy." }
+  };
+
+  const t = translations[lang] || translations['tr'];
+
   res.send(`
     <!DOCTYPE html>
-    <html lang="tr">
+    <html lang="${lang || 'tr'}">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Güvenli Ödeme Sayfasına Yönlendiriliyorsunuz...</title>
+      <title>${t.title}</title>
       <style>
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f0f12; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
         .card { background: #18181c; border: 1px solid rgba(255, 117, 140, 0.3); border-radius: 20px; padding: 40px; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -45,8 +55,8 @@ app.get('/pay', (req, res) => {
     <body>
       <div class="card">
         <div class="spinner"></div>
-        <h2>Güvenli Ödeme Sayfasına Yönlendiriliyorsunuz...</h2>
-        <p>Lütfen bekleyin, Lemon Squeezy ödeme ekranına aktarılıyorsunuz.</p>
+        <h2>${t.title}</h2>
+        <p>${t.desc}</p>
       </div>
     </body>
     </html>
