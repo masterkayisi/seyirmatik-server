@@ -150,12 +150,15 @@ io.on('connection', (socket) => {
       avatar: avatar || { type: 'sprite', index: Math.floor(Math.random() * 50) + 1 }
     });
 
+    const isUserPremium = !!(avatar && (avatar.isPremium === true || avatar.avatarFrameId === 'premium-fire'));
+
     // Send a system message to the chat
     io.to(roomId).emit('chat-message', {
       sender: 'System',
       text: `${username} odaya katıldı.`,
       timestamp: Date.now(),
-      isSystem: true
+      isSystem: true,
+      isPremium: isUserPremium
     });
   });
 
